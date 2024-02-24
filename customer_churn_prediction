@@ -1,0 +1,57 @@
+import numpy as np
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder, StandardScaler
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
+#loading the data from csv file to a pandas Dataframe
+data = pd.read_csv('/content/Churn_Modelling.csv')
+data.head()
+data.tail()
+data.describe()
+data.isnull().sum()
+# Step 2: Data Preprocessing
+# Encoding categorical variables
+label_encoder = LabelEncoder()
+data['Gender'] = label_encoder.fit_transform(data['Gender'])
+data['Geography']=label_encoder.fit_transform(data['Geography'])
+#Splitting the data into features and target
+X = data.drop(['RowNumber', 'CustomerId', 'Surname', 'Exited'], axis=1)  # Features
+y = data['Exited']  # Target variable
+# Standardizing numerical features
+scaler = StandardScaler()
+X[['CreditScore', 'Age', 'Tenure', 'Balance', 'NumOfProducts', 'EstimatedSalary']] = scaler.fit_transform(X[['CreditScore', 'Age', 'Tenure', 'Balance', 'NumOfProducts', 'EstimatedSalary']])
+# Splitting the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+# Step 3: Model Selection and Training
+# Logistic Regression
+logistic_model = LogisticRegression()
+logistic_model.fit(X_train, y_train)
+# Random Forest
+rf_model = RandomForestClassifier()
+rf_model.fit(X_train, y_train)
+# Gradient Boosting
+gb_model = GradientBoostingClassifier()
+gb_model.fit(X_train, y_train)
+# Step 4: Model Evaluation
+def evaluate_model(model, X_test, y_test):
+    y_pred = model.predict(X_test)
+    accuracy = accuracy_score(y_test, y_pred)
+    precision = precision_score(y_test, y_pred)
+    recall = recall_score(y_test, y_pred)
+    f1 = f1_score(y_test, y_pred)
+    roc_auc = roc_auc_score(y_test, y_pred)
+    print(f"Accuracy: {accuracy:.2f}, Precision: {precision:.2f}, Recall: {recall:.2f}, F1-score: {f1:.2f}, ROC-AUC: {roc_auc:.2f}")
+print("Logistic Regression:")
+evaluate_model(logistic_model, X_test, y_test)
+
+print("Random Forest:")
+evaluate_model(rf_model, X_test, y_test)
+
+print("Gradient Boosting:")
+evaluate_model(gb_model, X_test, y_test)
